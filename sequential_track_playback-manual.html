@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset=utf-8>
+  <title>Sequential track playback</title>
+  <script src="/resources/testharness.js"></script>
+  <script src="/resources/testharnessreport.js"></script>
+  <script src="resources/testharness-helpers.js"></script>
+</head>
+
+<body>
+  <video autoplay></video>
+  <div id="debug"></div>
+  <div id=log></div>
+</body>
+<script src="js/player.js"></script>
+<script src="js/manifest_parser.js"></script>
+<script src="js/mpd-parser.js"></script>
+<script>
+  setup({
+    explicit_timeout: true
+  });
+
+  var video = document.querySelector('video');
+  player = new Player(video);
+
+  var numberOfAppendedVideoSegment = 0;
+
+  video.addEventListener('loadstart', handleEvent);
+  video.addEventListener('play', handleEvent);
+  video.addEventListener('progress', handleEvent);
+  video.addEventListener('canplay', handleEvent);
+  video.addEventListener('canplaythrough', handleEvent);
+  video.addEventListener('ended', handleEvent);
+
+  var t = {
+    "playback_triggered": async_test("Video playback is triggered"),
+    "gap_test": async_test("No gap in Buffer"),
+    "buffer_size": async_test("Buffer size equals to video duration"),
+    "current_time": async_test("CurrentTime when ended is equal to duration in MPD")
+  }
+
+
+  let onSourceBufferAdded = function(sourceBuffer) {
+    const video = document.querySelector('video');
+    if (sourceBuffer) {
+      sourceBuffer.addEventListener('updateend', function() {
+        const segmentsNumber = player.getCurrentManifest().playlists[0].segments.length;
+        if (numberOfAppendedVideoSegment >= segmentsNumber) {
+          console.log("ALL SEGMENT APPENDED")
+          t.gap_test.step(function() {
+            assert_equals(video.buffered.length, 1);
+          });
+
+          t.buffer_size.step(function() {
+            assert_equals(video.buffered.end(0), player.getCurrentManifest().duration);
+          });
+          t.gap_test.done();
+          t.buffer_size.done();
+        }
+        numberOfAppendedVideoSegment++;
+      });
+    }
+  }
+  const callbacks = [onSourceBufferAdded];
+  player.registerCallbacks(callbacks);
+
+  function handleEvent(event) {
+    var video = document.querySelector('video');
+    switch (event.type) {
+      case "play":
+        t.playback_triggered.step(function() {
+          assert_true(true);
+        });
+        t.playback_triggered.done();
+        break;
+      case "ended":
+        onEnded();
+        break;
+      default:
+        console.log("video: ", event.type);
+    }
+  }
+
+  function onEnded() {
+    console.log("video: endedd - " + video.currentTime + "  " + player.getCurrentManifest().duration);
+    t.current_time.step(function() {
+      assert_equals(video.currentTime, player.getCurrentManifest().duration);
+    });
+    t.current_time.done();
+  }
+
+  // var playerSettings = { "fullScreen":"true", "buffer":30};
+  // player.init(playerSettings);
+  var urlParams;
+  (window.onpopstate = function() {
+    var match,
+      pl = /\+/g, // Regex for replacing addition symbol with a space
+      search = /([^&=]+)=?([^&]*)/g,
+      decode = function(s) {
+        return decodeURIComponent(s.replace(pl, " "));
+      },
+      query = window.location.search.substring(1);
+
+    urlParams = {};
+    while (match = search.exec(query))
+      urlParams[decode(match[1])] = decode(match[2]);
+  })();
+  var contentModel = urlParams["contentModel"];
+  contentModel = contentModel ? contentModel : "https://dash.fokus.fraunhofer.de/dt-sl3000/dash-clear-1/Manifest.mpd"
+  if (contentModel) {
+    player.load(contentModel);
+  }
+</script>
+</body>
+</html>
