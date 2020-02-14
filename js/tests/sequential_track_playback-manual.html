@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset=utf-8>
+  <title>Sequential track playback</title>
+  <script src="/resources/testharness.js"></script>
+  <script src="/resources/testharnessreport.js"></script>
+  <script src="resources/testharness-helpers.js"></script>
+</head>
+
+<body>
+  <video autoplay></video>
+  <div id="debug"></div>
+  <div id=log></div>
+</body>
+<script src="utils/test_helper.js"></script>
+<script src="../player.js"></script>
+<script src="../manifest_parser.js"></script>
+<script src="../mpd-parser.js"></script>
+<script src="sub-tests/every_sample_should_be_rendered.js"></script>
+<script src="sub-tests/playback_duration_matches_cmaf_duration.js"></script>
+<script src="sub-tests/low_startup_delay.js"></script>
+<script>
+  setup({
+    explicit_timeout: true
+  });
+
+  var video = document.querySelector('video');
+  player = new Player(video);
+
+  every_sample_shall_be_rendered();
+  playback_duration_matches_cmaf_duration();
+  low_startup_delay(120);
+
+  // var playerSettings = { "fullScreen":"true", "buffer":30};
+  // player.init(playerSettings);
+  var contentModel = urlParams["contentModel"];
+  contentModel = contentModel ? contentModel : "https://dash.fokus.fraunhofer.de/dt-sl3000/dash-clear-1/Manifest.mpd"
+  if (contentModel) {
+    player.load(contentModel);
+  }
+</script>
+</body>
+
+</html>

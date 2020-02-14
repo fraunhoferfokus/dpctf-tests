@@ -11,7 +11,7 @@ var Player = function(video) {
   this.sourceBuffer = null;
   this.manifestParser = null
   this.video = video;
-  this.callbackList = null;
+  this.callbackList = [];
   this.video.onerror = function(err) {
     console.log("Error " + JSON.stringify(video.error));
   }
@@ -21,6 +21,7 @@ Player.prototype.load = async function(testVector) {
   console.log("Test-Vector: ", testVector)
   this.manifestParser = new manifestParser(testVector);
   await this.manifestParser.parse();
+  this.fireCallback("onManifestParsed", null)
   this.setContentArrays();
   this.createMediaSource();
 };
@@ -30,18 +31,20 @@ Player.prototype.getCurrentManifest = function() {
 };
 
 Player.prototype.registerCallbacks = function(callbacks) {
-  this.callbackList = callbacks
+  this.callbackList = this.callbackList.concat(callbacks);
 };
 
 Player.prototype.fireCallback = function(callbackName, payload) {
+  if(!this.callbackList){
+    return;
+  }
   for (var i = 0; i < this.callbackList.length; i++) {
     if (this.callbackList[i].name == callbackName) {
       const callbackFunction = this.callbackList[i];
+      console.log(callbackFunction)
       callbackFunction(payload);
-      return;
     }
   }
-  console.log("callback not found")
 };
 
 Player.prototype.setContentArrays = function() {
