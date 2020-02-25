@@ -10,7 +10,7 @@
 </head>
 
 <body>
-  <video autoplay></video>
+  <video></video>
   <div id="debug"></div>
   <div id=log></div>
 </body>
@@ -28,13 +28,15 @@
 
   var video = document.querySelector('video');
   player = new Player(video);
+  var playerSettings = { "fullScreen":"false", "buffer":30, "numberOfSegmentBeforePlay":2};
+  player.init(playerSettings);
+
 
   every_sample_shall_be_rendered();
   playback_duration_matches_cmaf_duration();
-  low_startup_delay(120);
+  low_startup_delay(120, playerSettings.numberOfSegmentBeforePlay);
 
-  // var playerSettings = { "fullScreen":"true", "buffer":30};
-  // player.init(playerSettings);
+
   var contentModel = urlParams["contentModel"];
   contentModel = contentModel ? contentModel : "https://dash.fokus.fraunhofer.de/dt-sl3000/dash-clear-1/Manifest.mpd"
   if (contentModel) {

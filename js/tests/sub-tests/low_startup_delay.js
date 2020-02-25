@@ -1,18 +1,34 @@
-const low_startup_delay = (max_delay) => {
+const low_startup_delay = (max_delay, numberOfSegmentBeforePlay) => {
 
   max_delay = max_delay ? max_delay : 120;
   var load_time = null;
+  var numberOfAppendedVideoSegment = 0;
   var t = {
     "low_startup": async_test("The start-up delay is sufficiently low (120ms max)")
   };
   video.addEventListener('play', handleEvent);
-  let onManifestParsed = function() {
-    load_time = new Date();
+  video.addEventListener('canplay', handleEvent);
+  video.addEventListener('oncanplay', handleEvent);
+
+  let onSourceBufferAdded = function(sourceBuffer) {
+    const video = document.querySelector('video');
+    if (sourceBuffer) {
+      sourceBuffer.addEventListener('updateend', function() {
+        const segmentsNumber = player.getCurrentManifest().playlists[0].segments.length;
+        if(numberOfAppendedVideoSegment == numberOfSegmentBeforePlay - 1){
+          load_time = new Date();
+        }
+        numberOfAppendedVideoSegment++;
+      });
+    }
   }
-  const callbacks = [onManifestParsed];
+
+
+  const callbacks = [onSourceBufferAdded];
   player.registerCallbacks(callbacks);
 
   function handleEvent(event) {
+    console.log(event.name)
     var video = document.querySelector('video');
     switch (event.type) {
       case "play":

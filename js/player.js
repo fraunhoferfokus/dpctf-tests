@@ -2,7 +2,8 @@ var content = [];
 var video = null;
 var manifestParser = null;
 var sessions = [];
-var messageFormat = 'utf8'
+var messageFormat = 'utf8';
+var playerSettings = null;
 /* ================== Player related stuff ================== */
 
 var Player = function(video) {
@@ -15,6 +16,10 @@ var Player = function(video) {
   this.video.onerror = function(err) {
     console.log("Error " + JSON.stringify(video.error));
   }
+};
+
+Player.prototype.init = function(settings) {
+  playerSettings = settings;
 };
 
 Player.prototype.load = async function(testVector) {
@@ -86,6 +91,10 @@ Player.prototype.onMediaSourceOpen = function() {
   self.sourceBuffer = self.mediaSource.addSourceBuffer('video/mp4;codecs="avc1.4D401E"');
   self.fireCallback("onSourceBufferAdded", self.sourceBuffer)
   self.sourceBuffer.addEventListener('updateend', function() {
+
+    if(playerSettings.numberOfSegmentBeforePlay && playerSettings.numberOfSegmentBeforePlay == self.currentSegment){
+      video.play();
+    }
     self.debug('Buffer operation completed at ' + self.video.currentTime);
     self.Playerend();
   });
