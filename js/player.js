@@ -45,7 +45,7 @@ Player.prototype.fireCallback = function(callbackName, payload) {
   }
   for (var i = 0; i < this.callbackList.length; i++) {
     if (this.callbackList[i].name == callbackName) {
-      const callbackFunction = this.callbackList[i];
+      var callbackFunction = this.callbackList[i];
       console.log(callbackFunction)
       callbackFunction(payload);
     }
@@ -53,7 +53,7 @@ Player.prototype.fireCallback = function(callbackName, payload) {
 };
 
 Player.prototype.setContentArrays = function() {
-  const segmentsNumber = this.manifestParser.manifestContent.playlists[0].segments.length;
+  var segmentsNumber = this.manifestParser.manifestContent.playlists[0].segments.length;
   var initSegment = this.manifestParser.manifestContent.playlists[0].segments[0].map.resolvedUri
   content.push(initSegment);
   for (var i = 0; i < segmentsNumber; i++) {

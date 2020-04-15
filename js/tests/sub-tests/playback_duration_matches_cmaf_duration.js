@@ -1,17 +1,15 @@
-const playback_duration_matches_cmaf_duration = () => {
-
-
+function playback_duration_matches_cmaf_duration () {
   var numberOfAppendedVideoSegment = 0;
   var t = {
     "video_duration": async_test("Video duration equals to cmaf mpd duration"),
     "current_time": async_test("CurrentTime when ended is equal to duration in MPD")
   };
 
-  let onSourceBufferAdded = function(sourceBuffer) {
-    const video = document.querySelector('video');
+  var onSourceBufferAdded = function(sourceBuffer) {
+    var video = document.querySelector('video');
     if (sourceBuffer) {
       sourceBuffer.addEventListener('updateend', function() {
-        const segmentsNumber = player.getCurrentManifest().playlists[0].segments.length;
+        var segmentsNumber = player.getCurrentManifest().playlists[0].segments.length;
         if (numberOfAppendedVideoSegment >= segmentsNumber) {
           console.log("ALL SEGMENT APPENDED")
 
@@ -31,7 +29,7 @@ const playback_duration_matches_cmaf_duration = () => {
   video.addEventListener('canplay', handleEvent);
   video.addEventListener('canplaythrough', handleEvent);
   video.addEventListener('ended', handleEvent);
-  const callbacks = [onSourceBufferAdded];
+  var callbacks = [onSourceBufferAdded];
   player.registerCallbacks(callbacks);
 
 

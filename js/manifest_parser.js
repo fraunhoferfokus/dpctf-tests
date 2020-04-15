@@ -8,13 +8,13 @@ var manifestParser = function(url) {
 };
 
 manifestParser.prototype.parse = function() {
-  return new Promise(resolve => {
+  var self = this;
+  return new Promise(function (resolve) {
     var mpdParser = window['mpdParser'];
     var xhr = new XMLHttpRequest;
-    xhr.open('GET', this.manifestUrl);
+    xhr.open('GET', self.manifestUrl);
     xhr.responseType = 'text';
     xhr.overrideMimeType('text/xml');
-    self = this;
     xhr.onload = function() {
       if (xhr.readyState === xhr.DONE && xhr.status === 200) {
         var parsedManifest = mpdParser.parse(xhr.responseText, {
@@ -26,7 +26,5 @@ manifestParser.prototype.parse = function() {
       }
     };
     xhr.send();
-
-
   });
 }
